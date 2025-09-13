@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVault - Student Password Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>SecureVault</h2>
+            <p>Loading your secure password manager...</p>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Authentication Screen -->
+        <div id="auth-screen" class="screen hidden">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <div class="logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <h1>SecureVault</h1>
+                    </div>
+                    <p>Your secure password manager for students</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail" class="form-label">Email Address</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="student@example.com" value="demo@student.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword" class="form-label">Master Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your master password" value="demo123" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('loginPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--full-width">Sign In</button>
+                    </form>
+                    <p class="auth-switch">
+                        New to SecureVault? <button type="button" onclick="switchToSignup()" class="link-button">Create Account</button>
+                    </p>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signup-form" class="auth-form hidden">
+                    <h2>Create Your Account</h2>
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="signupEmail" class="form-label">Email Address</label>
+                            <input type="email" id="signupEmail" class="form-control" placeholder="student@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword" class="form-label">Master Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="signupPassword" class="form-control" placeholder="Create a strong master password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('signupPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div id="password-strength-indicator" class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <div class="strength-text">Password strength: <span class="strength-level">Very Weak</span></div>
+                                <div id="strength-requirements" class="strength-requirements"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your master password" required>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--full-width">Create Account</button>
+                    </form>
+                    <p class="auth-switch">
+                        Already have an account? <button type="button" onclick="switchToLogin()" class="link-button">Sign In</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboard-screen" class="screen hidden">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <div class="logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <h1>SecureVault</h1>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="security-score">
+                        <div class="score-circle">
+                            <div class="score-value" id="security-score">85</div>
+                        </div>
+                        <div class="score-label">Security Score</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="user-email">demo@student.edu</span>
+                        <button id="logout-btn" class="btn btn--secondary btn--sm">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <nav class="dashboard-nav">
+                <button id="nav-vault" class="nav-item active">
+                    <i class="fas fa-vault"></i> Password Vault
+                </button>
+                <button id="nav-add" class="nav-item">
+                    <i class="fas fa-plus"></i> Add Password
+                </button>
+                <button id="nav-generator" class="nav-item">
+                    <i class="fas fa-magic"></i> Password Generator
+                </button>
+                <button id="nav-quiz" class="nav-item">
+                    <i class="fas fa-brain"></i> Security Quiz
+                </button>
+                <button id="nav-tips" class="nav-item">
+                    <i class="fas fa-lightbulb"></i> Security Tips
+                </button>
+                <button id="nav-settings" class="nav-item">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            </nav>
+
+            <main class="dashboard-main">
+                <!-- Password Vault Tab -->
+                <div id="vault-tab" class="tab-content">
+                    <div class="tab-header">
+                        <h2>Your Password Vault</h2>
+                        <div class="vault-controls">
+                            <div class="search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="vault-search" placeholder="Search passwords..." class="form-control">
+                            </div>
+                            <button id="add-password-btn" class="btn btn--primary">
+                                <i class="fas fa-plus"></i> Add New
+                            </button>
+                        </div>
+                    </div>
+                    <div id="vault-list" class="vault-list">
+                        <!-- Password entries will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Add Password Tab -->
+                <div id="add-tab" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h2 id="add-form-title">Add New Password</h2>
+                    </div>
+                    <form id="add-password-form" class="password-form">
+                        <div class="form-group">
+                            <label for="website" class="form-label">Website/Service</label>
+                            <input type="text" id="website" class="form-control" placeholder="github.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="websiteName" class="form-label">Display Name</label>
+                            <input type="text" id="websiteName" class="form-control" placeholder="GitHub" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username/Email</label>
+                            <input type="text" id="username" class="form-control" placeholder="your-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="password" class="form-control" placeholder="Enter or generate password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button type="button" id="generate-password-btn" class="btn btn--secondary btn--sm">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                            </div>
+                            <div id="add-password-strength" class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <div class="strength-text">Password strength: <span class="strength-level">Very Weak</span></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes" class="form-label">Notes (Optional)</label>
+                            <textarea id="notes" class="form-control" placeholder="Additional notes about this account..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="cancel-add-btn" class="btn btn--secondary">Cancel</button>
+                            <button type="submit" class="btn btn--primary">
+                                <span id="save-btn-text">Save Password</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Password Generator Tab -->
+                <div id="generator-tab" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h2>Password Generator</h2>
+                        <p>Generate strong, unique passwords with real-time entropy calculation</p>
+                    </div>
+                    <div class="generator-container">
+                        <div class="generated-password-display">
+                            <input type="text" id="generated-password" class="form-control password-display" readonly>
+                            <button id="copy-generated-btn" class="btn btn--primary">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="generator-strength">
+                            <div class="strength-bar">
+                                <div id="generator-strength-fill" class="strength-fill"></div>
+                            </div>
+                            <div class="strength-text">Strength: <span id="generator-strength-text">Very Strong</span></div>
+                        </div>
+                        <div class="generator-options">
+                            <div class="form-group">
+                                <label for="password-length" class="form-label">Length: <span id="length-value">16</span></label>
+                                <input type="range" id="password-length" min="8" max="128" value="16" class="range-slider">
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="include-uppercase" checked>
+                                    <span class="checkmark"></span>
+                                    Uppercase letters (A-Z)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="include-lowercase" checked>
+                                    <span class="checkmark"></span>
+                                    Lowercase letters (a-z)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="include-numbers" checked>
+                                    <span class="checkmark"></span>
+                                    Numbers (0-9)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="include-symbols" checked>
+                                    <span class="checkmark"></span>
+                                    Symbols (!@#$%^&*)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="exclude-similar">
+                                    <span class="checkmark"></span>
+                                    Exclude similar characters (0, O, l, I)
+                                </label>
+                            </div>
+                        </div>
+                        <button id="regenerate-btn" class="btn btn--secondary btn--full-width">
+                            <i class="fas fa-sync"></i> Generate New Password
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security Quiz Tab -->
+                <div id="quiz-tab" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h2>Cybersecurity Knowledge Quiz</h2>
+                        <p>Test your knowledge with dynamic scoring and detailed feedback</p>
+                    </div>
+                    <div class="quiz-container">
+                        <div id="quiz-progress" class="quiz-progress">
+                            <div class="progress-bar">
+                                <div id="quiz-progress-fill" class="progress-fill"></div>
+                            </div>
+                            <div class="progress-text">
+                                Question <span id="current-question">1</span> of <span id="total-questions">8</span>
+                            </div>
+                        </div>
+                        
+                        <div id="quiz-question-container" class="quiz-question">
+                            <h3 id="question-text"></h3>
+                            <div id="quiz-options" class="quiz-options">
+                                <!-- Options will be populated dynamically -->
+                            </div>
+                            <div class="quiz-actions">
+                                <button id="quiz-submit-btn" class="btn btn--primary" disabled>Submit Answer</button>
+                            </div>
+                        </div>
+
+                        <div id="quiz-feedback" class="quiz-feedback hidden">
+                            <div id="feedback-content">
+                                <!-- Feedback will be populated dynamically -->
+                            </div>
+                            <button id="next-question-btn" class="btn btn--primary">Next Question</button>
+                        </div>
+
+                        <div id="quiz-results" class="quiz-results hidden">
+                            <div class="results-score">
+                                <div class="score-circle large">
+                                    <div class="score-value" id="quiz-final-score">0</div>
+                                    <div class="score-max">/12</div>
+                                </div>
+                                <h3 id="results-title">Great Job!</h3>
+                                <p id="results-description">You've completed the cybersecurity quiz.</p>
+                            </div>
+                            <div id="quiz-summary" class="quiz-summary">
+                                <!-- Question summaries will be populated here -->
+                            </div>
+                            <button id="retake-quiz-btn" class="btn btn--secondary">Retake Quiz</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tips Tab -->
+                <div id="tips-tab" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h2>Security Tips & Best Practices</h2>
+                        <p>Learn how to stay safe online and protect your digital identity</p>
+                    </div>
+                    <div id="security-tips-container" class="security-tips">
+                        <!-- Tips will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h2>Settings</h2>
+                    </div>
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h3>Account Settings</h3>
+                            <div class="setting-item">
+                                <label>Email Address</label>
+                                <input type="email" id="settings-email" class="form-control" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h3>Security</h3>
+                            <button id="change-master-password-btn" class="btn btn--outline">
+                                <i class="fas fa-key"></i> Change Master Password
+                            </button>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Data Management</h3>
+                            <div class="setting-actions">
+                                <button id="export-data-btn" class="btn btn--secondary">
+                                    <i class="fas fa-download"></i> Export Passwords
+                                </button>
+                                <button id="delete-account-btn" class="btn btn--outline" style="color: var(--color-error); border-color: var(--color-error);">
+                                    <i class="fas fa-trash"></i> Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeModal('delete-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Confirm Deletion</h3>
+                    <button onclick="closeModal('delete-modal')" class="modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this password entry? This action cannot be undone.</p>
+                    <div class="password-preview">
+                        <strong id="delete-password-name"></strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('delete-modal')" class="btn btn--secondary">Cancel</button>
+                    <button id="confirm-delete-btn" class="btn btn--primary" style="background-color: var(--color-error);">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Master Password Modal -->
+        <div id="change-password-modal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeModal('change-password-modal')"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Change Master Password</h3>
+                    <button onclick="closeModal('change-password-modal')" class="modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password" class="form-label">Current Password</label>
+                            <input type="password" id="current-password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password" class="form-label">New Password</label>
+                            <input type="password" id="new-password" class="form-control" required>
+                            <div id="new-password-strength" class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <div class="strength-text">Password strength: <span class="strength-level">Very Weak</span></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-new-password" class="form-label">Confirm New Password</label>
+                            <input type="password" id="confirm-new-password" class="form-control" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('change-password-modal')" class="btn btn--secondary">Cancel</button>
+                    <button id="save-new-password-btn" class="btn btn--primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
